@@ -1,0 +1,468 @@
+
+# WHERE Statements
+# Challenge No. 1
+# A customer forgot their wallet at our store! We need to track down their email to inform them. What is the email
+# for the customer with the name Nancy Thomas?
+
+SELECT email FROM customer
+WHERE first_name='Nancy' AND last_name='Thomas';
+
+
+# Challenge No. 2 
+# A customer wants to know what the movie "Outlaw Hanky" is about. Could you give them the description for the movie
+# that is found in the database?
+
+SELECT description FROM film
+WHERE title='Outlaw Hanky';
+
+# Challenge No. 3 
+# A customer is late on their movie return, and we've made them a letter ot their address at '259 Ipoh Drive'. 
+# We should also call them on the phone to let them know. Can you get their phone number from the customer database?
+
+SELECT phone FROM address
+WHERE address='259 Ipoh Drive'; 
+
+#Challenges: ORDER BY
+# Challenge No. 1
+# What are the customer ids of the first 10 customers who created a payment?
+
+SELECT customer_id FROM payment
+ORDER BY payment_date ASC
+LIMIT 10; 
+
+# Challenge No. 2 
+# A customer wants to quickly rent a video to watch over their short lunch break. What are the titles of the 5 shortest
+# (in runtime) movies? 
+
+SELECT title FROM film
+ORDER BY length ASC
+LIMIT 5; 
+
+# Challenge No. 3 
+# If the previous customer can watch any movie that is 50 minutes or less in run time, how many options do they have?
+
+SELECT COUNT (title) FROM film
+WHERE length <= 50; 
+
+
+
+# General Challenges - End of Section 2 
+
+# No. 1 / How many payment transactions were more than $5.00?
+
+ SELECT COUNT (amount) FROM payment
+ WHERE amount > 5 ;
+ 
+ 
+# No. 2 / How many actors have a first name that starts with the letter P?
+ SELECT COUNT (first_name) FROM actor
+ WHERE first_name LIKE 'P%';
+
+
+# No. 3 / How many unique districts are our customers from?
+
+ SELECT COUNT (DISTINCT (district)) FROM address;
+
+
+# No. 4 / Retrieve the list of names for the distinct districts from the previous question. 
+
+ SELECT DISTINCT (district) FROM address ;
+ 
+ 
+# No. 5 / How many films have a rating of R and a replacement cost between $5 and $15?
+ 
+ SELECT COUNT(*) FROM film
+ WHERE rating = 'R' AND replacement_cost BETWEEN 5 and 15 ;
+ 
+ 
+# No. 6 / How many films have the word 'Truman' somewhere in the title?
+
+ SELECT COUNT(*) FROM film
+ WHERE title LIKE '%Truman%'; 
+ 
+  
+  
+# Section 3 
+# GROUP BY Challenges
+  
+# No. 1 / We have staff members with IDs 1 and 2. We want to give a bonus to the staff member that handled the most
+# payments (most in terms of number of transactions, not total dollar amount). How many payments did each staff
+# member handle and who gets the bonus?
+  
+SELECT staff_id, COUNT (*) FROM payment
+GROUP BY staff_id ; 
+  
+  
+# No. 2 / Corporate HQ is conducting a study on the relationship between replacement cost and a movie MPAA rating. 
+# What is the average replacement cost per MPAA rating?
+   
+SELECT rating, ROUND(AVG(replacement_cost),2)
+FROM film
+GROUP BY rating ;  
+
+
+# No. 3 / We are running a promotion to reward our top 5 customers with coupons. What are the customer ids of the top 5 
+# customers by total spent? 
+
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+ORDER BY SUM (amount) DESC
+LIMIT 5 ; 
+
+
+# HAVING Challenges
+
+# No. 1 / We are launching a platinum service for our most loyal customers. We will assign platinum status to customers 
+# that have had 400 or more transaction payments. What customer_ids are eligible for platinum status?
+
+SELECT customer_id, COUNT(*)
+FROM payment
+GROUP BY customer_id
+HAVING COUNT(*) >= 40 ; 
+
+
+# No. 2 / What are the customer ids of customers who have spent more than $100 in payment transactions with our 
+# staff_id member 2?
+
+SELECT customer_id, SUM(amount)
+FROM payment
+WHERE staff_id = 2 
+GROUP BY customer_id
+HAVING SUM(amount) > 100 ; 
+ 
+
+# Section 4 
+
+# Assessment Test 1 
+
+# Question 1
+# Return the customer IDs of customers who have spent at least $110 with the staff member who has an ID of 2.
+
+ SELECT customer_id, SUM(amount)
+ FROM payment
+ WHERE staff_id = 2 
+ GROUP BY customer_id
+ HAVING SUM(amount) > 110 ;
+
+# Customers 187 and 148. 
+
+
+# Question 2 
+# How many films begin with the letter J?
+
+ SELECT COUNT(*)
+ FROM film
+ WHERE title LIKE 'J%' ; 
+ 
+ # There are 20.  
+
+
+# Question 3 
+# What customer has the highest customer ID number whose name starts with an 'E' and has an address ID lower than 500?
+
+ SELECT customer_id, first_name, last_name
+ FROM customer
+ WHERE first_name LIKE 'E%' and address_id < 500 
+ ORDER BY customer_id DESC
+ LIMIT 1 ; 
+ 
+ # Eddie Tomlim with customer_id 434
+ 
+ 
+ 
+ 
+ 
+
+# Section 5 
+
+# JOIN Challenges
+
+# No. 1 / California sales tax laws have changed and we need to alert our customers to this through email. What are 
+# the emails of the customers who live in California?
+
+SELECT district,email from address
+INNER JOIN customer
+ON address.address_id = customer.address_id
+WHERE district = 'California' ;
+
+
+
+# No. 2 / A customer walks in and is a huge fan of the actor "Nick Wahlberg" and wants to know which movies he is in.
+# Get a list of all the movies "Nick Wahlberg" has been in.
+
+SELECT * from actor
+Where first_name = 'Nick' and last_name = 'Wahlberg' ;
+
+# found that actor_id is 2 for Nick Wahlberg
+
+SELECT title from film
+INNER JOIN film_actor
+ON film.film_id = film_actor.film_id
+Where actor_id = 2 ; 
+
+# returns the list of movies he's been in
+
+# Alternatively, can join multiple tables with inner join
+# syntax for inner join of more than two tables:
+# SELECT * 
+# FROM table1 
+# INNER JOIN table2
+#     ON table1.primaryKey=table2.table1Id
+# INNER JOIN table3
+#    ON table1.primaryKey=table3.table1Id ;
+
+# One step query
+
+SELECT title,first_name,last_name FROM film_actor
+INNER JOIN film
+ON film.film_id = film_actor.film_id
+INNER JOIN actor
+ON film_actor.actor_id = actor.actor_id
+WHERE first_name = 'Nick' AND last_name = 'Wahlberg' ;
+
+
+
+
+
+# Section 6 
+# Timestamps and Extract Challenge Tasks
+
+# No. 1 / During which months did payments occur? Format your answer to return back the full month name. 
+
+SELECT DISTINCT(TO_CHAR(payment_date, 'Month' ))
+From payment ;
+
+
+# No. 2 / How many payments occurred on a Monday?
+
+SELECT COUNT (*) FROM payment
+WHERE EXTRACT(dow FROM payment_date) = 1 ;
+
+
+
+
+# Section 7
+# Assessment Test 2 
+
+# No. 1 / How can you retrieve all the information from the cd.facilities table?
+
+SELECT * FROM cd.facilities ;
+
+
+# No. 2 / You want to print out a list of all of the facilities and their cost to members. How would you retrieve a 
+# list of only facility names and costs?
+
+SELECT name,membercost FROM cd.facilities ; 
+
+
+# No. 3 / How can you produce a list of facilities that charge a fee to members?
+
+SELECT * FROM cd.facilities
+WHERE membercost > 0 ; 
+
+
+# No. 4 / How can you produce a list of facilities that charge a fee to members, and that fee is less than 1/50th of 
+# the monthly maintenance cost? Return the facid, facility name, member cost, and monthly maintenance of the facilities 
+# in question.
+
+SELECT facid,name,membercost,monthlymaintenance FROM cd.facilities
+WHERE membercost > 0 AND membercost < (monthlymaintenance/50.0) ;
+
+
+# No. 5 / How can you produce a list of all facilities with the word 'Tennis' in their name?
+
+SELECT * FROM cd.facilities
+WHERE name LIKE '%Tennis%' ; 
+
+
+# No. 6 / How can you retrieve the details of facilities with ID 1 and 5? Try to do it without using the OR operator.
+
+SELECT * FROM cd.facilities
+WHERE facid IN (1,5) ; 
+
+
+# No. 7 / How can you produce a list of members who joined after the start of September 2012? Return the memid, 
+# surname, firstname, and joindate of the members in question.
+
+SELECT memid,surname,firstname,joindate FROM cd.members
+WHERE joindate >= '2012-09-01' ; 
+
+
+# No. 8 / How can you produce an ordered list of the first 10 surnames in the members table? 
+# The list must not contain duplicates.
+
+SELECT DISTINCT surname FROM cd.members
+ORDER BY surname
+LIMIT 10 ; 
+
+
+# No. 9 / You'd like to get the signup date of your last member. How can you retrieve this information?
+
+SELECT joindate FROM cd.members
+ORDER BY joindate DESC
+LIMIT 1 ;
+
+
+# No. 10 / Produce a count of the number of facilities that have a cost to guests of 10 or more.
+
+SELECT count(*) FROM cd.facilities
+WHERE guestcost >= 10 ;
+
+
+# No. 11 / Produce a list of the total number of slots booked per facility in the month of September 2012. 
+# Produce an output table consisting of facility id and slots, sorted by the number of slots.
+
+SELECT facid,SUM(slots) AS total_slots from cd.bookings
+WHERE starttime >= '2012-09-01' AND starttime < '2012-10-01'
+GROUP BY facid
+ORDER BY SUM(slots) ;
+
+
+# No. 12 / Produce a list of facilities with more than 1000 slots booked. Produce an output table consisting of 
+# facility id and total slots, sorted by facility id.
+
+SELECT facid,SUM(slots) AS total_slots FROM cd.bookings
+GROUP BY facid
+HAVING SUM(slots)>1000
+ORDER BY facid ;
+
+
+# No. 13 / How can you produce a list of the start times for bookings for tennis courts, for the date '2012-09-21'? 
+# Return a list of start time and facility name pairings, ordered by the time.
+
+SELECT cd.bookings.starttime,cd.facilities.name FROM cd.bookings
+INNER JOIN cd.facilities
+ON cd.bookings.facid = cd.facilities.facid
+WHERE cd.facilities.facid IN (0,1) 
+AND cd.bookings.starttime >= '2012-09-21' 
+AND cd.bookings.starttime < '2012-09-22'
+ORDER BY cd.bookings.starttime ; 
+
+
+# No. 14 / How can you produce a list of the start times for bookings by members named 'David Farrell'?
+
+SELECT cd.bookings.starttime,cd.members.firstname,cd.members.surname 
+FROM cd.bookings
+INNER JOIN cd.members
+ON cd.bookings.memid = cd.members.memid
+WHERE cd.members.firstname = 'David'
+AND cd.members.surname = 'Farrell'
+; 
+
+
+
+
+
+# Section 9
+# Assessment Test 3
+
+# Welcome to your final assessment test! This will test your knowledge of the previous section, focused on 
+# creating databases and table operations. This test will actually consist of a more open-ended assignment below:
+
+# Complete the following task:
+
+# Create a new database called "School" this database should have two tables: teachers and students.
+# The students table should have columns for student_id, first_name,last_name, homeroom_number, phone,email, 
+# and graduation year.
+
+# The teachers table should have columns for teacher_id, first_name, last_name, homeroom_number, department, email, 
+# and phone.
+
+# The constraints are mostly up to you, but your table constraints do have to consider the following:
+
+# We must have a phone number to contact students in case of an emergency.
+# We must have ids as the primary key of the tables
+# Phone numbers and emails must be unique to the individual.
+
+# Once you've made the tables, insert a student named Mark Watney (student_id=1) who has a phone number of 
+# 777-555-1234 and doesn't have an email. He graduates in 2035 and has 5 as a homeroom number. Then insert a teacher 
+# names Jonas Salk (teacher_id = 1) who as a homeroom number of 5 and is from the Biology department. His contact 
+# info is: jsalk@school.org and a phone number of 777-555-4321.
+
+
+CREATE TABLE teachers(
+teacher_id serial PRIMARY KEY,
+first_name VARCHAR(45) NOT NULL,
+last_name VARCHAR(45) NOT NULL, 
+homeroom_number integer,
+department VARCHAR(45),
+email VARCHAR(20) UNIQUE,
+phone VARCHAR(20) UNIQUE);
+
+
+CREATE TABLE students(
+student_id SERIAL PRIMARY KEY,
+first_name  VARCHAR(50) NOT NULL,
+last_name VARCHAR(50) NOT NULL,
+homeroom_number  INTEGER,
+email  VARCHAR (50) NOT NULL UNIQUE,
+phone   VARCHAR(15) NOT NULL UNIQUE,
+graduation_year INTEGER); 
+
+ALTER TABLE students
+ALTER COLUMN email DROP NOT NULL
+
+INSERT INTO students (
+first_name,
+last_name,
+phone,
+graduation_year,
+homeroom_number)
+VALUES('Mark','Watney','7775551234',2035,5);
+
+INSERT INTO teachers(
+first_name,last_name, homeroom_number,department,email,phone)
+VALUES ('Jonas','Salk',5,'Biology','jsalk@school.org','7755554321');
+
+
+
+
+
+# Section 10
+# CASE Challenge Task
+
+# We want to know and compare the various amounts of films we have per movie rating for R, PG, and PG-13. 
+
+SELECT
+	SUM(
+		CASE rating
+		WHEN 'R' THEN 1 ELSE 0
+	END) AS r,
+	SUM(CASE rating
+		WHEN 'PG' THEN 1 ELSE 0
+	END) AS pg,
+	SUM(CASE rating
+		WHEN 'PG-13' THEN 1 ELSE 0
+	END) AS pg13
+FROM film; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
